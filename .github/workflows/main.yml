@@ -1,86 +1,32 @@
-name: PlatformIO CI
-
-on: [push]
+on:
+- push
+- pull_request
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    name: ${{ matrix.arduino-boards-fqbn }} - test compiling examples
+
+    runs-on: ubuntu-latest # I picked Ubuntu to use shell scripts.
+
+    strategy:
+      matrix:
+        # The matrix will produce one job for each configuration parameter of type `arduino-boards-fqbn`
+        # In the Arduino IDE, the fqbn is printed in the first line of the verbose output for compilation as parameter -fqbn=... for the "arduino-builder -dump-prefs" command
+        # You may add a suffix behind the fqbn with "|" to specify one board for e.g. different compile options like arduino:avr:uno|trace
+        #############################################################################################################
+        arduino-boards-fqbn:
+          - arduino:avr:uno
+
+      # Do not cancel all jobs / architectures if one job fails
+      fail-fast: false
 
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cache/pip
-            ~/.platformio/.cache
-          key: ${{ runner.os }}-pio
-      - uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
-      - name: Install PlatformIO Core
-        run: pip install --upgrade platformio
+      - name: Checkout
+        uses: actions/checkout@master
 
-      - name: Build "LocoFunction" with PlatformIO
-        run: |
-          cd examples/LocoFunction
-          cp ../../*.* .
-          pio run
-
-      - name: Build "GetBits" with PlatformIO
-        run: |
-          cd examples/GetBits
-          cp ../../*.* .
-          pio run
- 
-      - name: Copy all firmwares for for packaging
-        run: |
-          mkdir downloads
-          find . -name '*.bin' | cpio -pdm downloads
-          find . -name '*.hex' | cpio -pdm downloads
-          find . -name '*.uf2' | cpio -pdm downloads
-
-      - name: Package and upload all firmwares for download
-        uses: actions/upload-artifact@v3
-        with: 
-          name: all-firmwares-for-download
-          path: downloads
-
-      - name: Test on Arduino MEGA with Wokwi
-        uses: wokwi/wokwi-ci-action@v1
+      - name: Compile all examples
+        uses: ArminJo/arduino-test-compile@v3
         with:
-          token: ${{ secrets.WOKWI_CLI_TOKEN }}
-          path: /wokwi/mega # directory with wokwi.toml, relative to repo's root
-          timeout: 10000
-          expect_text: '<* LCD3:Free RAM='
-          fail_text: 'Error'
-#          scenario: 'test-hello-world.yaml' # optional
-
-      - name: Test on Arduino UNO with Wokwi
-        uses: wokwi/wokwi-ci-action@v1
-        with:
-          token: ${{ secrets.WOKWI_CLI_TOKEN }}
-          path: /wokwi/uno # directory with wokwi.toml, relative to repo's root
-          timeout: 10000
-          expect_text: '<* LCD3:Free RAM='
-          fail_text: 'Error'
-#          scenario: 'test-hello-world.yaml' # optional
-
-      - name: Test on Arduino NANO with Wokwi
-        uses: wokwi/wokwi-ci-action@v1
-        with:
-          token: ${{ secrets.WOKWI_CLI_TOKEN }}
-          path: /wokwi/nano # directory with wokwi.toml, relative to repo's root
-          timeout: 10000
-          expect_text: '<* LCD3:Free RAM='
-          fail_text: 'Error'
-#          scenario: 'test-hello-world.yaml' # optional
-      
-      - name: Test on ESP32 with Wokwi
-        uses: wokwi/wokwi-ci-action@v1
-        with:
-          token: ${{ secrets.WOKWI_CLI_TOKEN }}
-          path: /wokwi/esp32 # directory with wokwi.toml, relative to repo's root
-          timeout: 10000
-          expect_text: 'ESP32 / STANDARD_MOTOR_SHIELD'
-          fail_text: 'Error'
-#          scenario: 'test-hello-world.yaml' # optional
+          required-libraries: AccelStepper,Servo,DFRobotDFPlayerMini,U8g2,EncButton,DFPlayerMini_Fast
+          platform-url: https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json
+          arduino-board-fqbn: ${{ matrix.arduino-boards-fqbn }}
