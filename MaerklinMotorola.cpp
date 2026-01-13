@@ -110,47 +110,40 @@ void MaerklinMotorola::Parse() {
 			  DataQueue[QueuePos].Speed = (s==0) ?  0 : s-1;
 			  if(DataQueue[QueuePos].IsMM2)
 			  {
-				//convert MM2 bits to one number
+				// D = Bits[16], H = Bits[17]
 				unsigned char sMM2 = Bits[17] + Bits[15] * 2 + Bits[13] * 4 + Bits[11] * 8;
-				
-				switch(sMM2)
+				if (Bits[16] != Bits[17])
 				{
-					case 2:
-					case 3:
-					DataQueue[QueuePos].MM2FunctionIndex = 2;
-					DataQueue[QueuePos].IsMM2FunctionOn = sMM2 & 1;
-					break;
+					// Speed/Direction Packet (H = NOT D)
+					if (sMM2 == 10 || sMM2 == 11) {
+						DataQueue[QueuePos].MM2Direction = MM2DirectionState_Backward;
+					} else if (sMM2 == 5 || sMM2 == 4) {
+						DataQueue[QueuePos].MM2Direction = MM2DirectionState_Forward;
+					}
+				}
+				else
+				{
+					// Function Packet
+					DataQueue[QueuePos].IsMM2FunctionOn = Bits[17];
 
-					case 4:
-					case 5:
-					DataQueue[QueuePos].MM2Direction = MM2DirectionState_Forward;
-					break;
+					// Standard cases
+					if (sMM2 == 12 || sMM2 == 13) DataQueue[QueuePos].MM2FunctionIndex = 1;
+					else if (sMM2 == 2 || sMM2 == 3) DataQueue[QueuePos].MM2FunctionIndex = 2;
+					else if (sMM2 == 6 || sMM2 == 7) DataQueue[QueuePos].MM2FunctionIndex = 3;
+					else if (sMM2 == 14 || sMM2 == 15) DataQueue[QueuePos].MM2FunctionIndex = 4;
 
-					case 6:
-					case 7:
-					DataQueue[QueuePos].MM2FunctionIndex = 3;
-					DataQueue[QueuePos].IsMM2FunctionOn = sMM2 & 1;
-					break;
-
-					case 10:
-					case 11:
-					DataQueue[QueuePos].MM2Direction = MM2DirectionState_Backward;
-					break;
-
-					case 12:
-					case 13:
-					DataQueue[QueuePos].MM2FunctionIndex = 1;
-					DataQueue[QueuePos].IsMM2FunctionOn = sMM2 & 1;
-					break;
-
-					case 14:
-					case 15:
-					DataQueue[QueuePos].MM2FunctionIndex = 4;
-					DataQueue[QueuePos].IsMM2FunctionOn = sMM2 & 1;
-					break;
-					
-					default:
-					break;
+					// Exception cases
+					if (sMM2 == 10) {
+						if (s == 2) DataQueue[QueuePos].MM2FunctionIndex = 1;
+						else if (s == 3) DataQueue[QueuePos].MM2FunctionIndex = 2;
+						else if (s == 5) DataQueue[QueuePos].MM2FunctionIndex = 3;
+						else if (s == 6) DataQueue[QueuePos].MM2FunctionIndex = 4;
+					} else if (sMM2 == 5) {
+						if (s == 10) DataQueue[QueuePos].MM2FunctionIndex = 1;
+						else if (s == 11) DataQueue[QueuePos].MM2FunctionIndex = 2;
+						else if (s == 13) DataQueue[QueuePos].MM2FunctionIndex = 3;
+						else if (s == 14) DataQueue[QueuePos].MM2FunctionIndex = 4;
+					}
 				}
 			  }
 
