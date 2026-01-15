@@ -7,7 +7,11 @@
 #ifndef MaerklinMotorola_h
 #define MaerklinMotorola_h
 
+#if defined(ARDUINO_ARCH_RP2040)
+#include "pico/time.h"
+#else
 #include "Arduino.h"
+#endif
 
 #define MM_QUEUE_LENGTH	10
 
