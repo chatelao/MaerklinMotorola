@@ -188,7 +188,11 @@ void MaerklinMotorola::Parse() {
 }
 
 void MaerklinMotorola::PinChange() {
+#if defined(ARDUINO_ARCH_RP2040)
+  unsigned long tm = time_us_32();
+#else
   unsigned long tm = micros();
+#endif
   unsigned long tm_delta = tm - last_tm;
 
   if(sync) { //collect bits only after syncronization
