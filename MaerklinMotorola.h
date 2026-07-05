@@ -68,6 +68,7 @@ public:
   void PinChange();
   MaerklinMotorolaData* GetData();
   void Parse();
+  unsigned long GetOverrunCount() const;
 
 private:
   int pin;
@@ -76,6 +77,7 @@ private:
   volatile bool sync = false;
   volatile char timings_pos = 0;
   volatile char DataQueueWritePosition = 0;
+  volatile unsigned long overrun_count = 0;
   MaerklinMotorolaData DataQueue[MM_QUEUE_LENGTH];
 };
 

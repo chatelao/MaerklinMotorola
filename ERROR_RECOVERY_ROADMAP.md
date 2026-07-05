@@ -16,8 +16,8 @@ This document outlines the planned implementation steps to address the vulnerabi
 ## Phase 2: Buffer Management
 *Goal: Prevent data corruption from queue overruns during high-traffic periods.*
 
-- [ ] **Overrun Protection in ISR:** Update `PinChange()` to check the state of the next available `DataQueue` slot. If the state is `DataGramState_ReadyToParse` or `DataGramState_Validated`, the ISR should drop the incoming frame and wait for the next sync gap.
-- [ ] **Diagnostic Counter:** Add a `volatile unsigned long overrun_count` to track how many frames were dropped due to buffer saturation.
+- [x] **Overrun Protection in ISR:** Update `PinChange()` to check the state of the next available `DataQueue` slot. If the state is `DataGramState_ReadyToParse` or `DataGramState_Validated`, the ISR should drop the incoming frame and wait for the next sync gap.
+- [x] **Diagnostic Counter:** Add a `volatile unsigned long overrun_count` to track how many frames were dropped due to buffer saturation.
 
 ## Phase 3: Signal Robustness
 *Goal: Improve noise rejection and signal stability.*
