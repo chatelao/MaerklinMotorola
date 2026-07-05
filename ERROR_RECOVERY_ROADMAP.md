@@ -5,7 +5,7 @@ This document outlines the planned implementation steps to address the vulnerabi
 ## Phase 1: Concurrency Safety
 *Goal: Ensure thread safety between the Interrupt Service Routine (ISR) and the main loop.*
 
-- [ ] **Variable Decoration:** Mark the following members as `volatile` in `MaerklinMotorola.h`:
+- [x] **Variable Decoration:** Mark the following members as `volatile` in `MaerklinMotorola.h`:
     - `last_tm`
     - `sync`
     - `timings_pos`

@@ -50,7 +50,7 @@ struct MaerklinMotorolaData {
   unsigned char SubAddress;
   unsigned char PortAddress; // verbose "port" address (1 to 256 / 320)
 
-  DataGramState State;
+  volatile DataGramState State;
   
   bool Function;
   bool Stop;
@@ -71,11 +71,11 @@ public:
 
 private:
   int pin;
-  unsigned long last_tm = 0;
+  volatile unsigned long last_tm = 0;
   unsigned long sync_tm = 0;
-  bool sync = false;
-  char timings_pos = 0;
-  char DataQueueWritePosition = 0;
+  volatile bool sync = false;
+  volatile char timings_pos = 0;
+  volatile char DataQueueWritePosition = 0;
   MaerklinMotorolaData DataQueue[MM_QUEUE_LENGTH];
 };
 
