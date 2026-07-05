@@ -9,10 +9,15 @@
 MaerklinMotorola::MaerklinMotorola(int p) {
   pin = p;
   DataQueueWritePosition = 0;
+  overrun_count = 0;
   sync = false;
   for(int i=0; i<MM_QUEUE_LENGTH; i++) {
     DataQueue[i].State = DataGramState_Finished;
   }
+}
+
+unsigned long MaerklinMotorola::GetOverrunCount() const {
+  return overrun_count;
 }
 
 MaerklinMotorolaData* MaerklinMotorola::GetData() {
@@ -214,14 +219,18 @@ void MaerklinMotorola::PinChange() {
 		 DataQueueWritePosition = 0;
 	  }
 	  
-	  DataQueue[DataQueueWritePosition].State = DataGramState_Reading;
       sync = false;
       timings_pos = 0;
     }
   } else {
     if(tm_delta>500) { //protocol-specific pause time
-      sync = true;
-      sync_tm = tm;
+      if(DataQueue[DataQueueWritePosition].State == DataGramState_ReadyToParse || DataQueue[DataQueueWritePosition].State == DataGramState_Validated) {
+        overrun_count++;
+      } else {
+        sync = true;
+        sync_tm = tm;
+        DataQueue[DataQueueWritePosition].State = DataGramState_Reading;
+      }
     }
   }
 

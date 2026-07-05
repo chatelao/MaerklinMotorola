@@ -212,6 +212,35 @@ void test_invalid_length() {
     std::cout << "test_invalid_length passed" << std::endl;
 }
 
+void test_overrun_protection() {
+    MaerklinMotorola mm(2);
+    std::vector<int> bits(18, 0);
+    std::vector<int> timings = create_timings(bits);
+
+    // Fill the queue
+    for (int i = 0; i < MM_QUEUE_LENGTH; i++) {
+        send_packet(mm, timings);
+        // We DON'T call Parse() yet, so they stay in ReadyToParse state
+    }
+
+    // Now the queue should be full. The next packet should trigger overrun.
+    unsigned long initial_overrun = mm.GetOverrunCount();
+    send_packet(mm, timings);
+    assert(mm.GetOverrunCount() == initial_overrun + 1);
+
+    // Parse one and get it to free up a slot
+    mm.Parse();
+    MaerklinMotorolaData* data = mm.GetData();
+    assert(data != nullptr);
+
+    // Now we should be able to send another packet without overrun
+    initial_overrun = mm.GetOverrunCount();
+    send_packet(mm, timings);
+    assert(mm.GetOverrunCount() == initial_overrun);
+
+    std::cout << "test_overrun_protection passed" << std::endl;
+}
+
 int main() {
     test_mm1_loco();
     test_loco_changedir();
@@ -222,5 +251,6 @@ int main() {
     test_pinchange_resync();
     test_queue_wraparound();
     test_invalid_length();
+    test_overrun_protection();
     return 0;
 }
