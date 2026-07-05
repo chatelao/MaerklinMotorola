@@ -29,4 +29,4 @@ jobs:
           required-libraries: AccelStepper,Servo,DFRobotDFPlayerMini,U8g2,EncButton,DFPlayerMini_Fast,Adafruit NeoPixel
           platform-url: https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json
           arduino-board-fqbn: ${{ matrix.board.fqbn }}
-          sketch-names-exclude: ${{ matrix.board.exclude }}
+          sketches-exclude: ${{ matrix.board.exclude }}

@@ -10,6 +10,9 @@ MaerklinMotorola::MaerklinMotorola(int p) {
   pin = p;
   DataQueueWritePosition = 0;
   sync = false;
+  for(int i=0; i<MM_QUEUE_LENGTH; i++) {
+    DataQueue[i].State = DataGramState_Finished;
+  }
 }
 
 MaerklinMotorolaData* MaerklinMotorola::GetData() {
