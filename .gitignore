@@ -1,0 +1,7 @@
+# Build artifacts
+coverage_test
+
+# Gcov / Coverage data
+*.gcda
+*.gcno
+*.gcov
