@@ -16,6 +16,7 @@ jobs:
         #############################################################################################################
         arduino-boards-fqbn:
           - arduino:avr:uno
+          - rp2040:rp2040:seeed_xiao_rp2040
 
       # Do not cancel all jobs / architectures if one job fails
       fail-fast: false
@@ -27,6 +28,8 @@ jobs:
       - name: Compile all examples
         uses: ArminJo/arduino-test-compile@v3
         with:
-          required-libraries: AccelStepper,Servo,DFRobotDFPlayerMini,U8g2,EncButton,DFPlayerMini_Fast
+          required-libraries: Adafruit NeoPixel
           platform-url: https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json
           arduino-board-fqbn: ${{ matrix.arduino-boards-fqbn }}
+          sketches-exclude: >-
+            ${{ contains(matrix.arduino-boards-fqbn, 'avr:uno') && 'LocoMotor.ino' || '' }}
