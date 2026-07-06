@@ -277,6 +277,40 @@ void test_spike_filtering() {
     std::cout << "test_spike_filtering passed" << std::endl;
 }
 
+void test_adaptive_sync_threshold() {
+    MaerklinMotorola mm(2);
+    // 1. Send a magnet telegram (short period)
+    // Bit period for magnet telegram is < 150. Let's use 40+60=100.
+    std::vector<int> bits(18, 0);
+    bits[16] = 1; // MagnetState = true
+    std::vector<int> timings = create_timings(bits, 40, 60);
+
+    send_packet(mm, timings); mm.Parse();
+    send_packet(mm, timings); mm.Parse();
+    assert(mm.GetData() != nullptr);
+
+    // After this, sync_timeout should be around 100 * 3 = 300.
+
+    // 2. Try to sync with a gap shorter than 500 but longer than 300.
+    // Let's use a gap of 400.
+    current_micros += 400;
+    mm.PinChange(); // Should trigger sync because 400 > 300
+
+    // Send another packet
+    for (int t : timings) {
+        current_micros += t;
+        mm.PinChange();
+    }
+    mm.Parse();
+
+    // Send one more for validation
+    send_packet(mm, timings);
+    mm.Parse();
+
+    assert(mm.GetData() != nullptr);
+    std::cout << "test_adaptive_sync_threshold passed" << std::endl;
+}
+
 int main() {
     test_mm1_loco();
     test_loco_changedir();
@@ -289,5 +323,6 @@ int main() {
     test_invalid_length();
     test_overrun_protection();
     test_spike_filtering();
+    test_adaptive_sync_threshold();
     return 0;
 }

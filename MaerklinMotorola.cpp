@@ -11,6 +11,7 @@ MaerklinMotorola::MaerklinMotorola(int p) {
   DataQueueWritePosition = 0;
   overrun_count = 0;
   sync = false;
+  sync_timeout = MM_SYNC_TIMEOUT_DEFAULT;
   for(int i=0; i<MM_QUEUE_LENGTH; i++) {
     DataQueue[i].State = DataGramState_Finished;
   }
@@ -193,6 +194,14 @@ void MaerklinMotorola::Parse() {
 			}  
 		  }	
 		  if(parsed) {
+			  //Adaptive sync threshold
+			  int new_sync_timeout = period * 3;
+			  if (new_sync_timeout < 200) new_sync_timeout = 200;
+			  if (new_sync_timeout > 800) new_sync_timeout = 800;
+			  MM_ATOMIC_BLOCK {
+				  sync_timeout = new_sync_timeout;
+			  }
+
 			  //Get previous DataGram from Queue
 			  int previousDataGramPos = QueuePos > 0 ? QueuePos - 1 : MM_QUEUE_LENGTH - 1;
 			  MM_ATOMIC_BLOCK {
@@ -227,7 +236,7 @@ void MaerklinMotorola::PinChange() {
     DataQueue[DataQueueWritePosition].Timings[timings_pos] = int(tm_delta); //filing the time difference between the last edges
     timings_pos++;
 
-	if(tm_delta>500) {
+	if(tm_delta > (unsigned long)sync_timeout) {
 		//timeout - resync
 		timings_pos = 0;
 		sync = true;
@@ -247,7 +256,7 @@ void MaerklinMotorola::PinChange() {
       timings_pos = 0;
     }
   } else {
-    if(tm_delta>500) { //protocol-specific pause time
+    if(tm_delta > (unsigned long)sync_timeout) { //protocol-specific pause time
       if(DataQueue[DataQueueWritePosition].State == DataGramState_ReadyToParse || DataQueue[DataQueueWritePosition].State == DataGramState_Validated) {
         overrun_count++;
       } else {
