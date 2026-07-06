@@ -199,6 +199,10 @@ void MaerklinMotorola::PinChange() {
   unsigned long tm = micros();
   unsigned long tm_delta = tm - last_tm;
 
+  if (tm_delta < MM_MIN_PULSE_WIDTH) {
+    return;
+  }
+
   if(sync) { //collect bits only after syncronization
     DataQueue[DataQueueWritePosition].Timings[timings_pos] = int(tm_delta); //filing the time difference between the last edges
     timings_pos++;
