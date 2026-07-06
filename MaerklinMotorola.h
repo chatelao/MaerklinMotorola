@@ -9,6 +9,18 @@
 
 #include "Arduino.h"
 
+#ifdef __AVR__
+#include <util/atomic.h>
+#define MM_ATOMIC_BLOCK ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+#else
+struct MM_AtomicGuard {
+    MM_AtomicGuard() : active(true) { noInterrupts(); }
+    ~MM_AtomicGuard() { interrupts(); }
+    bool active;
+};
+#define MM_ATOMIC_BLOCK for (MM_AtomicGuard guard; guard.active; guard.active = false)
+#endif
+
 #define MM_QUEUE_LENGTH	10
 #define MM_MIN_PULSE_WIDTH 20
 

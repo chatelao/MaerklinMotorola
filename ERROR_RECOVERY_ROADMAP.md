@@ -11,7 +11,7 @@ This document outlines the planned implementation steps to address the vulnerabi
     - `timings_pos`
     - `DataQueueWritePosition`
     - `MaerklinMotorolaData::State`
-- [ ] **Atomic Guarding:** Implement `util/atomic.h` (for AVR) or equivalent platform-specific atomic blocks in `Parse()` and `GetData()` to protect state transitions.
+- [x] **Atomic Guarding:** Implement `util/atomic.h` (for AVR) or equivalent platform-specific atomic blocks in `Parse()` and `GetData()` to protect state transitions.
 
 ## Phase 2: Buffer Management
 *Goal: Prevent data corruption from queue overruns during high-traffic periods.*
