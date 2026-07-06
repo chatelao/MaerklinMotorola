@@ -8,4 +8,7 @@ typedef uint8_t byte;
 
 unsigned long micros();
 
+inline void noInterrupts() {}
+inline void interrupts() {}
+
 #endif

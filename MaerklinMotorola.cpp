@@ -17,13 +17,23 @@ MaerklinMotorola::MaerklinMotorola(int p) {
 }
 
 unsigned long MaerklinMotorola::GetOverrunCount() const {
-  return overrun_count;
+  unsigned long count;
+  MM_ATOMIC_BLOCK {
+    count = overrun_count;
+  }
+  return count;
 }
 
 MaerklinMotorolaData* MaerklinMotorola::GetData() {
 	for(int QueuePos=0; QueuePos<MM_QUEUE_LENGTH;QueuePos++) {
-		if(DataGramState_Validated == DataQueue[QueuePos].State) {
-			DataQueue[QueuePos].State = DataGramState_Finished;
+		bool validated = false;
+		MM_ATOMIC_BLOCK {
+			if(DataGramState_Validated == DataQueue[QueuePos].State) {
+				DataQueue[QueuePos].State = DataGramState_Finished;
+				validated = true;
+			}
+		}
+		if(validated) {
 			return DataQueue + QueuePos;
 		}
 	}
@@ -32,7 +42,13 @@ MaerklinMotorolaData* MaerklinMotorola::GetData() {
 
 void MaerklinMotorola::Parse() {
 	for(int QueuePos=0; QueuePos<MM_QUEUE_LENGTH;QueuePos++) {
-		if(DataGramState_ReadyToParse == DataQueue[QueuePos].State) {
+		bool readyToParse = false;
+		MM_ATOMIC_BLOCK {
+			if(DataGramState_ReadyToParse == DataQueue[QueuePos].State) {
+				readyToParse = true;
+			}
+		}
+		if(readyToParse) {
 		  int period = DataQueue[QueuePos].Timings[0]+DataQueue[QueuePos].Timings[1]; //calculate bit length
 		  bool valid = true;
 		  bool parsed = false;
@@ -179,17 +195,21 @@ void MaerklinMotorola::Parse() {
 		  if(parsed) {
 			  //Get previous DataGram from Queue
 			  int previousDataGramPos = QueuePos > 0 ? QueuePos - 1 : MM_QUEUE_LENGTH - 1;
-			  DataQueue[QueuePos].State = DataGramState_Parsed;
-			  if(DataGramState_Parsed == DataQueue[previousDataGramPos].State) {
-				  //Check if previous DataGram was identical
-				  if(0 == memcmp(DataQueue[QueuePos].Trits, DataQueue[previousDataGramPos].Trits, 9)) {
-					  DataQueue[QueuePos].State = DataGramState_Validated;
+			  MM_ATOMIC_BLOCK {
+				  DataQueue[QueuePos].State = DataGramState_Parsed;
+				  if(DataGramState_Parsed == DataQueue[previousDataGramPos].State) {
+					  //Check if previous DataGram was identical
+					  if(0 == memcmp(DataQueue[QueuePos].Trits, DataQueue[previousDataGramPos].Trits, 9)) {
+						  DataQueue[QueuePos].State = DataGramState_Validated;
+					  }
 				  }
 			  }
 		  }
 		  else {
 			  //Invalid frame
-			  DataQueue[QueuePos].State = DataGramState_Error;
+			  MM_ATOMIC_BLOCK {
+				  DataQueue[QueuePos].State = DataGramState_Error;
+			  }
 		  }
 		}
 	}
