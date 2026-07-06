@@ -10,6 +10,7 @@
 #include "Arduino.h"
 
 #define MM_QUEUE_LENGTH	10
+#define MM_MIN_PULSE_WIDTH 20
 
 enum DataGramState
 {

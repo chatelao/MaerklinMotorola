@@ -241,6 +241,42 @@ void test_overrun_protection() {
     std::cout << "test_overrun_protection passed" << std::endl;
 }
 
+void test_spike_filtering() {
+    MaerklinMotorola mm(2);
+    std::vector<int> bits(18, 0);
+    std::vector<int> timings = create_timings(bits);
+
+    // Normal sync
+    current_micros += 1000;
+    mm.PinChange();
+
+    // Send bits with a spike
+    for (size_t i = 0; i < timings.size(); i++) {
+        if (i == 2) { // Inject spike in the middle of a timing interval
+            current_micros += 10; // Less than MM_MIN_PULSE_WIDTH (20)
+            mm.PinChange();
+            current_micros += (timings[i] - 10);
+            mm.PinChange();
+        } else {
+            current_micros += timings[i];
+            mm.PinChange();
+        }
+    }
+
+    mm.Parse();
+    // Packet should still be parsed correctly because the spike at 10us was ignored,
+    // so the total duration for that timing interval remains timings[2].
+
+    // We need a second packet for validation
+    send_packet(mm, timings);
+    mm.Parse();
+
+    MaerklinMotorolaData* data = mm.GetData();
+    assert(data != nullptr);
+    assert(data->Address == 0);
+    std::cout << "test_spike_filtering passed" << std::endl;
+}
+
 int main() {
     test_mm1_loco();
     test_loco_changedir();
@@ -252,5 +288,6 @@ int main() {
     test_queue_wraparound();
     test_invalid_length();
     test_overrun_protection();
+    test_spike_filtering();
     return 0;
 }

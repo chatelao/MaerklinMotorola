@@ -22,7 +22,7 @@ This document outlines the planned implementation steps to address the vulnerabi
 ## Phase 3: Signal Robustness
 *Goal: Improve noise rejection and signal stability.*
 
-- [ ] **Spike Filtering:** Implement a simple software low-pass filter in `PinChange()` to ignore pulses shorter than a minimum threshold (e.g., 20µs).
+- [x] **Spike Filtering:** Implement a simple software low-pass filter in `PinChange()` to ignore pulses shorter than a minimum threshold (e.g., 20µs).
 - [ ] **Adaptive Sync Threshold:** Instead of a hardcoded 500µs, investigate using a threshold relative to the measured bit period to improve performance on varied hardware.
 
 ## Verification Plan
