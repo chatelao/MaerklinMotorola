@@ -23,7 +23,7 @@ This document outlines the planned implementation steps to address the vulnerabi
 *Goal: Improve noise rejection and signal stability.*
 
 - [x] **Spike Filtering:** Implement a simple software low-pass filter in `PinChange()` to ignore pulses shorter than a minimum threshold (e.g., 20µs).
-- [ ] **Adaptive Sync Threshold:** Instead of a hardcoded 500µs, investigate using a threshold relative to the measured bit period to improve performance on varied hardware.
+- [x] **Adaptive Sync Threshold:** Instead of a hardcoded 500µs, the library now uses a threshold relative to the measured bit period (3x period, bounded 200-800µs) to improve performance on varied hardware.
 
 ## Verification Plan
 1. **Unit Testing:** Update the native test suite to simulate concurrent access and verify that atomic blocks prevent race conditions.

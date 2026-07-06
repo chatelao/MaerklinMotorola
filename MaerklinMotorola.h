@@ -23,6 +23,7 @@ struct MM_AtomicGuard {
 
 #define MM_QUEUE_LENGTH	10
 #define MM_MIN_PULSE_WIDTH 20
+#define MM_SYNC_TIMEOUT_DEFAULT 500
 
 enum DataGramState
 {
@@ -91,6 +92,7 @@ private:
   volatile char timings_pos = 0;
   volatile char DataQueueWritePosition = 0;
   volatile unsigned long overrun_count = 0;
+  volatile int sync_timeout;
   MaerklinMotorolaData DataQueue[MM_QUEUE_LENGTH];
 };
 
