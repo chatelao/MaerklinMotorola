@@ -68,6 +68,7 @@ void MaerklinMotorola::Parse() {
 		  DataQueue[QueuePos].MM2Direction = MM2DirectionState_Unavailable;
 		  DataQueue[QueuePos].DecoderState = MM2DecoderState_Unavailable;
 		  DataQueue[QueuePos].PortAddress = 0;
+		  DataQueue[QueuePos].IsIdle = false;
 		  
 		  byte Bits[18];
 		  
@@ -124,7 +125,15 @@ void MaerklinMotorola::Parse() {
 		  if(DataQueue[QueuePos].tm_package_delta > 1300 && DataQueue[QueuePos].tm_package_delta < 4200 && valid) { //protocol-specific telegram length: turnouts or locomotive protocol
 			DataQueue[QueuePos].IsMagnet = ((period < 150) ? true : false);  //distinction protocol (fixed-time)
 			
-			DataQueue[QueuePos].Address = DataQueue[QueuePos].Trits[3] * 27 + DataQueue[QueuePos].Trits[2] * 9 + DataQueue[QueuePos].Trits[1] * 3 + DataQueue[QueuePos].Trits[0];
+			int addr = DataQueue[QueuePos].Trits[3] * 27 + DataQueue[QueuePos].Trits[2] * 9 + DataQueue[QueuePos].Trits[1] * 3 + DataQueue[QueuePos].Trits[0];
+			if (addr == 0) {
+				DataQueue[QueuePos].Address = 80;
+			} else if (addr == 80) {
+				DataQueue[QueuePos].Address = 80;
+				DataQueue[QueuePos].IsIdle = true;
+			} else {
+				DataQueue[QueuePos].Address = addr;
+			}
 
 			if(!DataQueue[QueuePos].IsMagnet) { //Loktelegramm
 			  DataQueue[QueuePos].Function = (DataQueue[QueuePos].Trits[4] == 1) ? true : false;

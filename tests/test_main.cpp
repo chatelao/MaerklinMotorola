@@ -48,7 +48,7 @@ void test_mm1_loco() {
 
     MaerklinMotorolaData* data = mm.GetData();
     assert(data != nullptr);
-    assert(data->Address == 0);
+    assert(data->Address == 80);
     assert(data->Function == true);
     assert(data->IsMM2 == false);
     std::cout << "test_mm1_loco passed" << std::endl;
@@ -273,7 +273,7 @@ void test_spike_filtering() {
 
     MaerklinMotorolaData* data = mm.GetData();
     assert(data != nullptr);
-    assert(data->Address == 0);
+    assert(data->Address == 80);
     std::cout << "test_spike_filtering passed" << std::endl;
 }
 
@@ -342,6 +342,40 @@ void test_reproduce_issue_speed6_f4() {
     std::cout << "test_reproduce_issue_speed6_f4 passed" << std::endl;
 }
 
+void test_address_80_mapping() {
+    MaerklinMotorola mm(2);
+    std::vector<int> bits(18, 0); // all 00 -> ternary 0000
+    std::vector<int> timings = create_timings(bits);
+
+    send_packet(mm, timings); mm.Parse();
+    send_packet(mm, timings); mm.Parse();
+
+    MaerklinMotorolaData* data = mm.GetData();
+    assert(data != nullptr);
+    assert(data->Address == 80);
+    std::cout << "test_address_80_mapping passed" << std::endl;
+}
+
+void test_idle_state_detection() {
+    MaerklinMotorola mm(2);
+    std::vector<int> bits(18, 0);
+    // Ternary 2222: Trits[0..3] = 2. Bit pairs 10.
+    bits[0]=1; bits[1]=0;
+    bits[2]=1; bits[3]=0;
+    bits[4]=1; bits[5]=0;
+    bits[6]=1; bits[7]=0;
+
+    std::vector<int> timings = create_timings(bits);
+
+    send_packet(mm, timings); mm.Parse();
+    send_packet(mm, timings); mm.Parse();
+
+    MaerklinMotorolaData* data = mm.GetData();
+    assert(data != nullptr);
+    assert(data->IsIdle == true);
+    std::cout << "test_idle_state_detection passed" << std::endl;
+}
+
 int main() {
     test_mm1_loco();
     test_loco_changedir();
@@ -356,5 +390,7 @@ int main() {
     test_spike_filtering();
     test_adaptive_sync_threshold();
     test_reproduce_issue_speed6_f4();
+    test_address_80_mapping();
+    test_idle_state_detection();
     return 0;
 }

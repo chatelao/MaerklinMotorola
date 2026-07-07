@@ -1,5 +1,6 @@
 # Build artifacts
 coverage_test
+test_runner
 
 # Gcov / Coverage data
 *.gcda

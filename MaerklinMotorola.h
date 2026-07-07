@@ -74,6 +74,7 @@ struct MaerklinMotorolaData {
   bool IsMagnet;
   bool IsMM2;
   bool IsMM2FunctionOn;
+  bool IsIdle;
 };
 
 class MaerklinMotorola {
