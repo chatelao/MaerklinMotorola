@@ -311,6 +311,37 @@ void test_adaptive_sync_threshold() {
     std::cout << "test_adaptive_sync_threshold passed" << std::endl;
 }
 
+void test_reproduce_issue_speed6_f4() {
+    // Speed 6, f4 OFF should use EFGH=1010 instead of standard 1110.
+    // EFGH=1010 means sMM2 = 10.
+    // Speed 6 means s = 7 (Bits[10]=1, Bits[12]=1, Bits[14]=1, Bits[16]=0)
+
+    MaerklinMotorola mm(2);
+    std::vector<int> bits(18, 0);
+    // Address 3: Trit 0=0, Trit 1=1 (11), Trit 2=0, Trit 3=0
+    bits[2] = 1; bits[3] = 1;
+    // Trit 4 = 0 (F0 OFF)
+    // Speed 6 (s=7): Bits 10, 12, 14 = 1
+    bits[10] = 1; bits[12] = 1; bits[14] = 1; bits[16] = 0;
+    // EFGH = 1010: Bits[11]=1, Bits[13]=0, Bits[15]=1, Bits[17]=0
+    bits[11] = 1; bits[13] = 0; bits[15] = 1; bits[17] = 0;
+
+    std::vector<int> timings = create_timings(bits);
+    send_packet(mm, timings); mm.Parse();
+    send_packet(mm, timings); mm.Parse();
+
+    MaerklinMotorolaData* data = mm.GetData();
+    assert(data != nullptr);
+
+    // Reproduction: currently this will FAIL because it will be MM2DirectionState_Backward
+    std::cout << "Current Speed: " << (int)data->Speed << " Direction: " << (int)data->MM2Direction << " f4: " << (int)data->IsMM2FunctionOn << std::endl;
+    assert(data->MM2FunctionIndex == 4);
+    assert(data->IsMM2FunctionOn == false);
+    assert(data->MM2Direction == MM2DirectionState_Unavailable);
+
+    std::cout << "test_reproduce_issue_speed6_f4 passed" << std::endl;
+}
+
 int main() {
     test_mm1_loco();
     test_loco_changedir();
@@ -324,5 +355,6 @@ int main() {
     test_overrun_protection();
     test_spike_filtering();
     test_adaptive_sync_threshold();
+    test_reproduce_issue_speed6_f4();
     return 0;
 }
