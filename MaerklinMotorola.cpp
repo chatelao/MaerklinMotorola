@@ -147,8 +147,25 @@ void MaerklinMotorola::Parse() {
 					break;
 
 					case 4:
-					case 5:
 					DataQueue[QueuePos].MM2Direction = MM2DirectionState_Forward;
+					break;
+
+					case 5:
+					if(s == 11) {
+						DataQueue[QueuePos].MM2FunctionIndex = 1;
+						DataQueue[QueuePos].IsMM2FunctionOn = true;
+					} else if(s == 12) {
+						DataQueue[QueuePos].MM2FunctionIndex = 2;
+						DataQueue[QueuePos].IsMM2FunctionOn = true;
+					} else if(s == 14) {
+						DataQueue[QueuePos].MM2FunctionIndex = 3;
+						DataQueue[QueuePos].IsMM2FunctionOn = true;
+					} else if(s == 15) {
+						DataQueue[QueuePos].MM2FunctionIndex = 4;
+						DataQueue[QueuePos].IsMM2FunctionOn = true;
+					} else {
+						DataQueue[QueuePos].MM2Direction = MM2DirectionState_Forward;
+					}
 					break;
 
 					case 6:
@@ -158,6 +175,23 @@ void MaerklinMotorola::Parse() {
 					break;
 
 					case 10:
+					if(s == 3) {
+						DataQueue[QueuePos].MM2FunctionIndex = 1;
+						DataQueue[QueuePos].IsMM2FunctionOn = false;
+					} else if(s == 4) {
+						DataQueue[QueuePos].MM2FunctionIndex = 2;
+						DataQueue[QueuePos].IsMM2FunctionOn = false;
+					} else if(s == 6) {
+						DataQueue[QueuePos].MM2FunctionIndex = 3;
+						DataQueue[QueuePos].IsMM2FunctionOn = false;
+					} else if(s == 7) {
+						DataQueue[QueuePos].MM2FunctionIndex = 4;
+						DataQueue[QueuePos].IsMM2FunctionOn = false;
+					} else {
+						DataQueue[QueuePos].MM2Direction = MM2DirectionState_Backward;
+					}
+					break;
+
 					case 11:
 					DataQueue[QueuePos].MM2Direction = MM2DirectionState_Backward;
 					break;
